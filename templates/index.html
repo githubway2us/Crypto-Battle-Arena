@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Battle Arena</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+        .form-container {
+            margin-bottom: 20px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .form-container select, .form-container input {
+            padding: 8px;
+            margin: 0 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .form-container button {
+            padding: 8px 16px;
+            background-color: #388e3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #2e7d32;
+        }
+        .error {
+            color: #d32f2f;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .reports-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 cards per row */
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .report {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .report h2 {
+            color: #d32f2f;
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        .bullish { color: #388e3c; }
+        .bearish { color: #d32f2f; }
+        .neutral { color: #fbc02d; }
+        .error { color: #d32f2f; }
+        .report p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        h3 {
+            text-align: center;
+            margin: 20px 0;
+        }
+        /* Loading bar styles */
+        .loading-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .loading-bar {
+            width: 300px;
+            height: 20px;
+            background-color: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .loading-progress {
+            width: 0;
+            height: 100%;
+            background-color: #388e3c;
+            animation: loading 2s infinite;
+        }
+        @keyframes loading {
+            0% { width: 0; }
+            50% { width: 100%; }
+            100% { width: 0; }
+        }
+        @media (max-width: 1200px) {
+            .reports-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 800px) {
+            .reports-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 500px) {
+            .reports-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">{{ header }}</div>
+    <div class="form-container">
+        <form id="battle-form" method="POST">
+            <label for="timeframe">เลือก Timeframe:</label>
+            <select name="timeframe" id="timeframe">
+                {% for tf in timeframes %}
+                    <option value="{{ tf }}" {% if tf == selected_timeframe %}selected{% endif %}>{{ tf }}</option>
+                {% endfor %}
+            </select>
+            <label for="limit">จำนวนแท่งเทียน:</label>
+            <input type="number" name="limit" id="limit" value="{{ selected_limit }}" min="1" max="1000">
+            <button type="submit">อัปเดต Battle Reports</button>
+        </form>
+        {% if error_message %}
+            <p class="error">{{ error_message }}</p>
+        {% endif %}
+    </div>
+    <div class="loading-container" id="loading">
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
+        </div>
+    </div>
+    <h3>📊 Battle Reports สำหรับนักสู้ (Timeframe: {{ selected_timeframe }}, {{ selected_limit }} รอบ)</h3>
+    <div class="reports-container">
+        {% for report in reports %}
+            <div class="report">
+                <h2>⚔️ {{ report.symbol }} ({{ selected_timeframe }}) - Battle Report ⚔️</h2>
+                <p class="{% if 'Bullish' in report.trend %}bullish{% elif 'Bearish' in report.trend %}bearish{% elif 'Error' in report.trend or 'ไม่สามารถ' in report.trend %}error{% else %}neutral{% endif %}">
+                    {{ report.trend }}
+                </p>
+                <p>💰 Current Price: {{ report.current_price }}</p>
+                <p>🩸 Price HP: {{ report.price_hp }}</p>
+                <p>🎯 Swing High: {{ report.swing_high }}</p>
+                <p>🎯 Swing Low: {{ report.swing_low }}</p>
+                <p>💥 Price ATK: {{ report.price_atk }}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Show loading bar when form is submitted
+        document.getElementById('battle-form').addEventListener('submit', function() {
+            document.getElementById('loading').style.display = 'flex';
+        });
+
+        // Hide loading bar when page is fully loaded
+        window.addEventListener('load', function() {
+            document.getElementById('loading').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
